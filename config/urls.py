@@ -21,4 +21,5 @@ urlpatterns = [
     url(r'^$', generic.RedirectView.as_view(url='/api/v1/', permanent=False)),
     url(r'^admin/', admin.site.urls),
     url(r'^api/v1/', include('project.api_auth.urls')),
+    url(r'^api/v1/', include('project.predictor.urls')),
 ]

@@ -21,6 +21,7 @@ class TeamEventSerializer(serializers.Serializer):
     class Meta:
         model = TeamEvent
         fields = ('id', 'event', 'team', 'result_type', 'result')
+        read_only_fields = ('event','team')
 
 
 class TeamSerializer(serializers.Serializer):
