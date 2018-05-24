@@ -4,6 +4,7 @@ from .models import (
     TeamEvent,
     Team,
     Event,
+    EventType,
     UserTeamEventPrediction,
     UserGlobalPrediction
 )
@@ -12,5 +13,6 @@ admin.site.register(ResultType)
 admin.site.register(TeamEvent)
 admin.site.register(Team)
 admin.site.register(Event)
+admin.site.register(EventType)
 admin.site.register(UserTeamEventPrediction)
 admin.site.register(UserGlobalPrediction)

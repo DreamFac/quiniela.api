@@ -6,25 +6,39 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.http import Http404
+from rest_framework.reverse import reverse
+from rest_framework.decorators import api_view
+from django.contrib.auth.models import User
+from rest_framework.permissions import AllowAny
 # Create your views here.
+
 
 class ResultTypeViewSet(viewsets.ModelViewSet):
     queryset = ResultType.objects.all()
     serializer_class = ResultTypeSerializer
+    permission_classes = (AllowAny,)
 
 
 class EventViewSet(viewsets.ModelViewSet):
     queryset = Event.objects.all()
     serializer_class = EventSerializer
+    permission_classes = (AllowAny,)
+
+
+class EventTypeViewSet(viewsets.ModelViewSet):
+    queryset = EventType.objects.all()
+    serializer_class = EventTypeSerializer
+    permission_classes = (AllowAny,)
 
 class TeamViewSet(viewsets.ModelViewSet):
     queryset = Team.objects.all()
     serializer_class = TeamSerializer
+    permission_classes = (AllowAny,)
 
 
 
 class TeamEventView(APIView):
-
+    permission_classes = (AllowAny,)
     def get_team(self, pk):
         try:
             return Team.objects.get(pk=pk)
@@ -59,8 +73,10 @@ class TeamEventView(APIView):
     def put(self, request, team_id, event_id, format = None ):
         team = self.get_team(team_id)
         event = self.get_event(event_id)
-
-        serializer = TeamEventSerializer(data=request.data, partial=True)
+        
+        team_event = TeamEvent.objects.filter(team__id = team_id, event__id = event_id)
+        
+        serializer = TeamEventSerializer(team_event, data=request.data, partial=True)
 
         if serializer.is_valid():
             serializer.validated_data['team'] = team
@@ -76,13 +92,32 @@ class TeamEventView(APIView):
 
 
 class UserTeamEventPredictionViewSet(APIView):
+    permission_classes = (AllowAny,)
+    
+    def get_user(self, pk):
+        try:
+            return User.objects.get(pk=pk)
+        except User.DoesNotExist:
+            raise Http404
 
     def post(self, request, user_id , format = None):
+        user = self.get_user(user_id)
+        serializer = UserTeamEventPredictionSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.validated_data['user'] = user
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def put(self, request, user_id, format= None):
         pass
+
 
 
 class UserGlobalPredictionViewSet(APIView):
-
+    permission_classes = (AllowAny,)
 
     def post(self, request, user_id , format = None):
         pass
+
+
+

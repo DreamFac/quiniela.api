@@ -15,9 +15,10 @@ from .views import *
 router = DefaultRouter()
 router.register(r'result-types', ResultTypeViewSet)
 router.register(r'events', EventViewSet)
+router.register(r'event-types', EventTypeViewSet)
 router.register(r'teams',TeamViewSet)
- 
-urlpatterns = [
-    url(r'^$', get_schema_view()),
-    url(r'^team/(?P<team_id>[0-9]+)/event/(?P<event_id>[0-9]+)', TeamEventView.as_view())
+
+urlpatterns  = [
+    url(r'', include(router.urls)),
+    url(r'^team/(?P<team_id>[0-9]+)/event/(?P<event_id>[0-9]+)', TeamEventView.as_view(), name='team-event-list')
 ]

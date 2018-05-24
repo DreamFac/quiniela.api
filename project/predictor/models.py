@@ -14,24 +14,38 @@ class ResultType(BaseModel):
     name = models.CharField(max_length=150)
     result_type = models.CharField(max_length=150)
     description = models.CharField(max_length=250)
+    def __str__(self):
+        return self.name
+
+class EventType(BaseModel):
+    name = models.CharField(max_length=150)
+    description = models.CharField(max_length=250)
+
+    def __str__(self):
+        return self.name
 
 class Team(BaseModel):
-
     name = models.CharField(max_length=150)
     flag = models.CharField(max_length=150)
-
+    def __str__(self):
+        return self.name
 
 class Event(BaseModel):
-    
     date = models.DateField()
     place = models.CharField(max_length=150)
+    event_type = models.ForeignKey(EventType, related_name='event_type', on_delete=models.CASCADE)
+    def __str__(self):
+        return '[ {} ] - [ {} ] - [ {} ]'.format(self.event_type,str(self.date),self.place)
 
 class TeamEvent(BaseModel):
 
+    result_type = models.ForeignKey(ResultType, related_name='team_event', on_delete=models.CASCADE)
     event = models.ForeignKey(Event, related_name='team_event', on_delete=models.CASCADE)
     team = models.ForeignKey(Team, related_name='team_event', on_delete=models.CASCADE)
-    result_type = models.ForeignKey(ResultType, related_name='team_event', on_delete=models.CASCADE)
     result = models.CharField(max_length=150)
+
+    def __str__(self):
+        return '[ {} ] - [ {} ] - [ {} ] - [ {} ]'.format(self.event, self.team,self.result_type, self.result)
 
 class UserTeamEventPrediction(BaseModel):
     user = models.ForeignKey('auth.User', related_name='user_team_event_prediction', on_delete=models.CASCADE)
