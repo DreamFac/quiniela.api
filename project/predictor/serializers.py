@@ -38,7 +38,7 @@ class TeamEventSerializer(serializers.ModelSerializer):
 
 class EventSerializer(serializers.ModelSerializer):
     team_event = TeamEventSerializer(many=True, read_only = True)
-    event_type = EventTypeSerializer(many=False, read_only=True)
+    event_type = EventTypeSerializer()
     class Meta:
         model = Event
         fields = ('date', 'place','event_type', 'team_event',)
@@ -49,6 +49,7 @@ class UserTeamEventPredictionSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserTeamEventPrediction
         fields = ('user', 'team_event', 'team', 'result_type', 'prediction',)
+        required_fields = ('team_event','team','result_type','prediction',)
 
 class UserGlobalPredictionSerializer(serializers.ModelSerializer):
     class Meta:
