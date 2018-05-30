@@ -1,0 +1,1 @@
+from .schemas import get_predictor_schema

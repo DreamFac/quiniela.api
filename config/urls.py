@@ -16,9 +16,14 @@ Including another URLconf
 from django.conf.urls import include, url
 from django.contrib import admin
 from django.views import generic
+from rest_framework.schemas import get_schema_view
 
 urlpatterns = [
+
+    
     url(r'^$', generic.RedirectView.as_view(url='/api/v1/', permanent=False)),
+    url(r'^schema/', get_schema_view()),
     url(r'^admin/', admin.site.urls),
     url(r'^api/v1/', include('project.api_auth.urls')),
+    url(r'^api/v1/', include('project.predictor.urls')),
 ]

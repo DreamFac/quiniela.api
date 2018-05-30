@@ -7,6 +7,12 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 import environ
 from datetime import datetime, timedelta
 
+from ..predictor.serializers import (
+    UserTeamEventPredictionSerializer,
+    UserGlobalPredictionSerializer
+)
+
+
 class UserSerializer(serializers.ModelSerializer):
 
     email = serializers.EmailField(
@@ -18,10 +24,11 @@ class UserSerializer(serializers.ModelSerializer):
                                          queryset=User.objects.all())]
                                      )
 
-    password = serializers.CharField(min_length=8, write_only=True, required=True)
+    password = serializers.CharField(
+        min_length=8, write_only=True, required=True)
 
-    wallet = serializers.SlugRelatedField(
-        many=False, read_only=True, slug_field='address')
+    user_prediction = UserTeamEventPredictionSerializer(many=True)
+    user_global_prediction = UserGlobalPredictionSerializer(many=True)
 
     def create(self, validated_data):
 
@@ -35,8 +42,9 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('id', 'username', 'email', 'wallet', 'password','is_active')
-        required_fields = ('username','password','email')
+        fields = ('id', 'username', 'email',  'password', 'is_active','user_prediction','user_global_prediction')
+        required_fields = ('username', 'password', 'email')
+        read_only_fields = ('user_prediction','user_global_prediction')
 
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -45,21 +53,7 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         token = super(MyTokenObtainPairSerializer, cls).get_token(user)
         print(token)
         # Add custom claims
-        
+
         print(token)
-        
+
         return token
-
-    def validate(self,attrs):
-        data = super(MyTokenObtainPairSerializer, self).validate(attrs)
-
-        env = environ.Env()
-        expired_token = env('ACCESS_TOKEN_LIFETIME', default=5)
-        nextTime = datetime.now() + timedelta(minutes = expired_token)
-        time_stamp = str(int(nextTime.timestamp()))
-        print('time stamp ' + time_stamp)
-        
-        data['expires_on'] = time_stamp
-
-        return data
-
