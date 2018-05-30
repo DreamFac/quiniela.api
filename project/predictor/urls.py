@@ -20,7 +20,7 @@ router.register(r'teams',TeamViewSet)
 
 urlpatterns  = [
     url(r'', include(router.urls)),
-    url(r'^team/(?P<team_id>[0-9]+)/event/(?P<event_id>[0-9]+)', TeamEventView.as_view(), name='team-event'),
-    url(r'^predictions/', UserTeamEventPredictionCreate.as_view(), name='user-prediction-create'),
-    url(r'^predictions/(?P<pk>[0-9]+)/', UserTeamEventPredictionUpdate.as_view(), name='user-prediction-update')
+    url(r'^team/(?P<team_id>[0-9]+)/event/(?P<event_id>[0-9]+)/?$', TeamEventView.as_view(), name='team-event'),
+    url(r'^predictions/?$', UserTeamEventPredictionCreate.as_view(), name='user-prediction-create'),
+    url(r'^predictions/(?P<pk>[0-9]+)/?$', UserTeamEventPredictionUpdate.as_view(), name='user-prediction-update')
 ]
