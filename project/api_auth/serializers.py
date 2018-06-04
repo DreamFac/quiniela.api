@@ -12,6 +12,13 @@ from ..predictor.serializers import (
     UserGlobalPredictionSerializer
 )
 
+from .models import UserProfile
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserProfile
+        fields = ('id', 'first_name','last_name','country')
+        required_fields =  ('country',)
 
 class UserSerializer(serializers.ModelSerializer):
 
@@ -27,8 +34,10 @@ class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(
         min_length=8, write_only=True, required=True)
 
-    user_prediction = UserTeamEventPredictionSerializer(many=True)
-    user_global_prediction = UserGlobalPredictionSerializer(many=True)
+    user_prediction = UserTeamEventPredictionSerializer(many=True, read_only = True)
+    
+    user_global_prediction = UserGlobalPredictionSerializer(many=True, read_only = True)
+
 
     def create(self, validated_data):
 
@@ -42,8 +51,8 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('id', 'username', 'email',  'password', 'is_active','user_prediction','user_global_prediction')
-        required_fields = ('username', 'password', 'email')
+        fields = ('id', 'username', 'email',  'password', 'is_active','user_prediction','user_global_prediction',)
+        required_fields = ('username', 'password', 'email',)
         read_only_fields = ('user_prediction','user_global_prediction')
 
 
