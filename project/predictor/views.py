@@ -356,6 +356,7 @@ class LeaderboardView(APIView):
                             delta = user_prediction.delta
                             deltas = delta + deltas
                             delta_check = True
+                            continue
 
 
                     checked = False
