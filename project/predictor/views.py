@@ -233,14 +233,15 @@ class UserTeamEventPredictionUpdate(APIView):
 class UserGlobalPredictionView(APIView):
 
     def get_global_prediction(self, user_id):
-        return UserGlobalPrediction.objects.filter(user__id=user_id)
+        return UserGlobalPrediction.objects.filter(user_id=user_id)
 
     def get(self, request, format=None):
         user = request.user
         global_prediction = self.get_global_prediction(user.id)
+        print(global_prediction)
         if global_prediction:
             serializer = UserGlobalPredictionReadSerializer(
-                global_prediction, many=True)
+                data=global_prediction, many=True)
             if serializer.is_valid():
                 return Response(serializer.data)
         return Response([])
@@ -250,7 +251,7 @@ class UserGlobalPredictionView(APIView):
         if bulk:
             user = request.user
             serializer = UserGlobalPredictionSerializer(
-                request.data, many=True)
+                data=request.data, many=True)
             if serializer.is_valid():
                 for data in serializer.validated_data:
                     data['user'] = user
