@@ -243,7 +243,7 @@ class UserGlobalPredictionView(APIView):
                 global_prediction, many=True)
             if serializer.is_valid():
                 return Response(serializer.data)
-        return Response([], status=status.HTTP_400_BAD_REQUEST)
+        return Response([])
 
     def post(self, request, format=None):
         bulk = isinstance(request.data, list)
