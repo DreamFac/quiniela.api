@@ -23,5 +23,6 @@ urlpatterns = [
     url(r'^team-event/?$', TeamEventView.as_view(), name='team-event'),
     url(r'^points/?$', UserPredictionPointsView.as_view(), name='user-points'),
     url(r'^predictions/?$', UserTeamEventPredictionCreate.as_view(), name='user-prediction-create'),
-    url(r'^predictions/(?P<pk>[0-9]+)/?$', UserTeamEventPredictionUpdate.as_view(), name='user-prediction-update')
+    url(r'^predictions/(?P<pk>[0-9]+)/?$', UserTeamEventPredictionUpdate.as_view(), name='user-prediction-update'),
+    url(r'^leaderboard/?$', LeaderboardView.as_view(), name='leaderboard')
 ]

@@ -81,7 +81,7 @@ class UserTeamEventPrediction(BaseModel):
 
     calculated = models.BooleanField(default=False)
 
-    delta = models.DecimalField(max_digits=16, decimal_places=2, default=0.00)
+    delta = models.DecimalField(max_digits=16, decimal_places=2)
 
 
 
@@ -99,6 +99,6 @@ class UserLeaderboard(BaseModel):
     user = models.ForeignKey(
         'auth.User', related_name='user_leaderboard', on_delete=models.CASCADE)
     
-    points = models.BigIntegerField()
+    points = models.BigIntegerField(default=0)
 
-    
+    delta_points = models.DecimalField(max_digits=16, decimal_places=2)

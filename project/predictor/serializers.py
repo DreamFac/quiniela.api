@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from ..api_auth.serializers import UserSerializer
 from .models import (
     ResultType,
     TeamEvent,
@@ -73,8 +74,11 @@ class UserGlobalPredictionReadSerializer(UserGlobalPredictionSerializer):
     team = TeamSerializer()
 
 
-class EserLeaderboardSerializer(serializers.ModelSerializer):
+class UserLeaderboardSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserLeaderboard
-        fields = ('user', 'points')
-        read_only_fields = ('user','points')
+        fields = ('user', 'points', 'delta_points',)
+
+
+class UserLeaderboardReadSerializer(UserLeaderboardSerializer):
+        user = UserSerializer()

@@ -11,6 +11,7 @@ from rest_framework.decorators import api_view
 from django.contrib.auth.models import User
 from rest_framework.permissions import AllowAny
 from .schemas import get_predictor_schema
+from decimal import Decimal
 
 # Create your views here.
 
@@ -42,7 +43,6 @@ class TeamEventView(APIView):
             return TeamEvent.objects.get(pk=pk)
         except TeamEvent.DoesNotExist:
             raise Http404
-
 
     def post(self, request, format=None):
 
@@ -155,7 +155,8 @@ class UserTeamEventPredictionCreate(APIView):
                 db_prediction = self.get_object(pk)
 
                 if db_prediction.team_event.started:
-                    errors.append({'error':'event: id: {} already starded'.format(db_prediction.team_event.event.id)})
+                    errors.append({'error': 'event: id: {} already starded'.format(
+                        db_prediction.team_event.event.id)})
                     continue
 
                 serializer = UserTeamEventPredictionSerializer(
@@ -185,37 +186,6 @@ class UserTeamEventPredictionCreate(APIView):
         return bool(prediction)
 
 
-class UserPredictionPointsView(APIView):
-
-    DEPENDENT = 'dependent'
-    def get_user_points(self, user_id):
-        user_predictions = UserTeamEventPrediction.objects.filter(
-            user__id=user_id, team_event__completed=True)
-        points = 0
-        if user_predictions:
-            
-            checked = False
-            
-            for user_prediction in user_predictions:
-                
-                prediction = user_prediction.prediction.lstrip().lower()
-                final_result = user_prediction.team_event.result.lstrip().lower()
-                # wait for the second result to add points
-                
-                if user_prediction.result_type.result_type == self.DEPENDENT and not checked:
-                    checked = True
-                    continue
-                
-                if prediction == final_result:
-                    point = user_prediction.result_type.points
-                    points += point
-                
-                checked = False
-
-        return {'points': points}
-
-    def get(self, request, format=None):
-        return Response(self.get_user_points(request.user.id), status=status.HTTP_200_OK)
 
 
 class UserTeamEventPredictionUpdate(APIView):
@@ -316,3 +286,129 @@ class UserGlobalPredictionView(APIView):
             return Response(ok_response)
 
         return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class LeaderboardView(APIView):
+
+    DEPENDENT = 'dependent'
+
+    def get_predictions(self, user_id):
+        return UserTeamEventPrediction.objects.filter(user__id = user_id, calculated=False,  team_event__completed=True)
+
+    def post(self, request, format=None):
+
+        if not request.user.is_staff:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+        users = User.objects.all()
+
+        leaderboard = []
+
+        leaderboard_update = []
+
+        predictions_update = []
+
+        no_changes = False
+
+        for user in users:
+
+            user_predictions = self.get_predictions(user.id)
+
+            if user_predictions:
+                
+                checked = False
+                delta_check = False
+                user_position = UserLeaderboard.objects.filter(user__id=user.id)
+                
+                if not user_position:
+                    user_position = UserLeaderboard(user = user, points=0, delta_points=0.0)
+                    user_position.save()
+                else:
+                    user_position = user_position[0]
+
+                points = user_position.points
+                deltas = Decimal(user_position.delta_points)
+
+                for user_prediction in user_predictions:
+                    prediction = user_prediction.prediction.lstrip().lower()
+                    final_result = user_prediction.team_event.result.lstrip().lower()
+                    # wait for the second result to add points
+
+                    user_prediction.calculated = True
+                    user_prediction.save(update_fields=['calculated'])
+
+                    if user_prediction.result_type.result_type == self.DEPENDENT and not checked:
+                        checked = True
+                        continue
+
+
+                    if prediction == final_result:
+                        point = user_prediction.result_type.points
+                        points += point
+
+                        if not delta_check:
+                            delta = user_prediction.delta
+                            deltas = delta + deltas
+                            delta_check = True
+
+
+                    checked = False
+                    delta_check = False
+                    
+
+                update = {
+                    'id': user_position.id,
+                    'user':user.id,
+                    'points':points,
+                    'delta_points':deltas
+                }
+
+                leaderboard.append((user_position,update))
+
+        if bool(leaderboard):
+            ok_response = []
+            errors = []
+            for original, update in leaderboard:
+                serializer = UserLeaderboardSerializer(original, data=update)
+                if serializer.is_valid():
+                    instance = serializer.save()
+                    read_serializer = UserLeaderboardReadSerializer(instance)
+                    ok_response.append(read_serializer.data)
+                else:
+                    errors.append(serializer.errors)
+            return Response(ok_response, status=status.HTTP_200_OK)
+        return Response({'message':'no changes for the leaderboard'})
+
+
+class UserPredictionPointsView(APIView):
+
+    DEPENDENT = 'dependent'
+
+    def get_user_points(self, user_id):
+        user_predictions = UserTeamEventPrediction.objects.filter(
+            user__id=user_id, team_event__completed=True)
+        points = 0
+        if user_predictions:
+
+            checked = False
+
+            for user_prediction in user_predictions:
+
+                prediction = user_prediction.prediction.lstrip().lower()
+                final_result = user_prediction.team_event.result.lstrip().lower()
+                # wait for the second result to add points
+
+                if user_prediction.result_type.result_type == self.DEPENDENT and not checked:
+                    checked = True
+                    continue
+
+                if prediction == final_result:
+                    point = user_prediction.result_type.points
+                    points += point
+
+                checked = False
+
+        return {'points': points}
+
+    def get(self, request, format=None):
+        return Response(self.get_user_points(request.user.id), status=status.HTTP_200_OK)
