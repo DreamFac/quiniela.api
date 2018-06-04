@@ -388,8 +388,6 @@ class LeaderboardView(APIView):
 
 class UserPredictionPointsView(APIView):
 
-    DEPENDENT = 'dependent'
-
     def get_user_points(self, user_id):
         points = UserLeaderboard.objects.filter(user__id = user_id)
         return {'points': points[0].points}
