@@ -6,7 +6,8 @@ from .models import (
     Event,
     EventType,
     UserTeamEventPrediction,
-    UserGlobalPrediction
+    UserGlobalPrediction,
+    UserLeaderboard
 )
 
 
@@ -32,7 +33,7 @@ class TeamSerializer(serializers.ModelSerializer):
 class TeamEventSerializer(serializers.ModelSerializer):
     class Meta:
         model = TeamEvent
-        fields = ('id', 'event', 'team', 'result_type', 'result','completed')
+        fields = ('id', 'event', 'team', 'result_type', 'result','started','completed')
         required_fields = ('event','team',)
 
 class TeamEventReadSerializer(TeamEventSerializer):
@@ -41,6 +42,7 @@ class TeamEventReadSerializer(TeamEventSerializer):
 
 class EventSerializer(serializers.ModelSerializer):
     team_event = TeamEventReadSerializer(many=True, read_only = True)
+    date = serializers.DateTimeField(format="%Y-%m-%d %H:%M")
     class Meta:
         model = Event
         fields = ('id','date', 'place','event_type', 'team_event',)
@@ -51,14 +53,13 @@ class EventSerializer(serializers.ModelSerializer):
 class UserTeamEventPredictionSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserTeamEventPrediction
-        fields = ('id','user', 'team_event', 'team', 'result_type', 'prediction','read')
+        fields = ('id','user', 'team_event', 'team', 'result_type', 'prediction','read','delta',)
         required_fields = ('team_event','team','result_type','prediction',)
+        write_only_fields = ('calculated',)
         read_only_fields = ('user',)
 
 
 class UserTeamEventPredictionReadSerializer(UserTeamEventPredictionSerializer):
-    team = TeamSerializer()
-    result_type = ResultTypeSerializer()
     team_event = TeamEventReadSerializer()
 
 
@@ -70,3 +71,10 @@ class UserGlobalPredictionSerializer(serializers.ModelSerializer):
 
 class UserGlobalPredictionReadSerializer(UserGlobalPredictionSerializer):
     team = TeamSerializer()
+
+
+class EserLeaderboardSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserLeaderboard
+        fields = ('user', 'points')
+        read_only_fields = ('user','points')

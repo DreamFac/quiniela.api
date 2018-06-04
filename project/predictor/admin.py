@@ -31,7 +31,7 @@ class TeamAdmin(admin.ModelAdmin):
     list_display_links = ('name',)
 
 class TeamEventAdmin(admin.ModelAdmin):
-    list_display = ('id', 'result_type', 'event', 'team', 'result','completed',)
+    list_display = ('id', 'result_type', 'event', 'team', 'result','completed','started',)
     list_display_links = ('event',)
 
 class UserTeamEventPredictionAdmin(admin.ModelAdmin):
