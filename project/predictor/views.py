@@ -295,6 +295,12 @@ class LeaderboardView(APIView):
     def get_predictions(self, user_id):
         return UserTeamEventPrediction.objects.filter(user__id = user_id, calculated=False,  team_event__completed=True)
 
+
+    def get(self, request, format=None):
+        leaderboard = UserLeaderboard.objects.all()
+        serializer = UserLeaderboardReadSerializer(leaderboard, many=True)
+        return Response(serializer.data)
+
     def post(self, request, format=None):
 
         if not request.user.is_staff:
@@ -385,30 +391,8 @@ class UserPredictionPointsView(APIView):
     DEPENDENT = 'dependent'
 
     def get_user_points(self, user_id):
-        user_predictions = UserTeamEventPrediction.objects.filter(
-            user__id=user_id, team_event__completed=True)
-        points = 0
-        if user_predictions:
-
-            checked = False
-
-            for user_prediction in user_predictions:
-
-                prediction = user_prediction.prediction.lstrip().lower()
-                final_result = user_prediction.team_event.result.lstrip().lower()
-                # wait for the second result to add points
-
-                if user_prediction.result_type.result_type == self.DEPENDENT and not checked:
-                    checked = True
-                    continue
-
-                if prediction == final_result:
-                    point = user_prediction.result_type.points
-                    points += point
-
-                checked = False
-
-        return {'points': points}
+        points = UserLeaderboard.objects.filter(user__id = user_id)
+        return {'points': points[0].points}
 
     def get(self, request, format=None):
         return Response(self.get_user_points(request.user.id), status=status.HTTP_200_OK)

@@ -102,3 +102,6 @@ class UserLeaderboard(BaseModel):
     points = models.BigIntegerField(default=0)
 
     delta_points = models.DecimalField(max_digits=16, decimal_places=2)
+
+    class Meta:
+        ordering = ['-points', '-delta_points']
