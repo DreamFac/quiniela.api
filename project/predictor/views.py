@@ -37,70 +37,43 @@ class TeamViewSet(viewsets.ModelViewSet):
 
 class TeamEventView(APIView):
 
-    def get_team(self, pk):
-        try:
-            return Team.objects.get(pk=pk)
-        except Team.DoesNotExist:
-            raise Http404
-
-    def get_event(self, pk):
-        try:
-            return Event.objects.get(pk=pk)
-        except Event.DoesNotExist:
-            raise Http404
-
     def get_object(self, pk):
         try:
             return TeamEvent.objects.get(pk=pk)
         except TeamEvent.DoesNotExist:
             raise Http404
 
-    def get_team_event(self, team_id, event_id):
-        return TeamEvent.objects.filter(team__id=team_id, event__id=event_id)
+    def post(self, request, format=None):
 
-    def get(self, request, team_id, event_id, format=None):
-        team_event = self.get_team_event(team_id, event_id)
-        if team_event:
-            serializer = TeamEventReadSerializer(team_event, many=True)
-            return Response(serializer.data)
-        else:
-            return Response(status=status.HTTP_404_NOT_FOUND)
+        bulk = isinstance(request.data, list)
+        if bulk:
+            serializer = TeamEventSerializer(data=request.data, many = True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def post(self, request, team_id, event_id, format=None):
-        team = self.get_team(team_id)
-        event = self.get_event(event_id)
+    def put(self, request,  format=None):
+        validated = []
+        ok_response = []
+        errors = []
+        
+        for data in request.data:
+            pk = data['id']
+            db_team_event = self.get_object(pk)
+            serializer = TeamEventSerializer(db_team_event, data=data)
+            if serializer.is_valid():
+                validated.append(serializer)
+            else:
+                errors.append(serializer.errors)
 
-        serializer = TeamEventSerializer(data=request.data)
+        if not errors:
+            for serializer in validated:
+                serializer.save()
+                ok_response.append(serializer.data)
+            return Response(ok_response)
 
-        if serializer.is_valid():
-            serializer.validated_data['team'] = team
-            serializer.validated_data['event'] = event
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def put(self, request, team_id, event_id, format=None):
-
-        team = self.get_team(team_id)
-        event = self.get_event(event_id)
-
-        team_event = self.get_team_event(team_id, event_id)
-
-        if team_event is None:
-            return Response({'error': 'team event not found'}, status=status.HTTP_404_NOT_FOUND)
-
-        serializer = TeamEventSerializer(
-            team_event, data=request.data, partial=True)
-
-        if serializer.is_valid():
-            serializer.validated_data['team'] = team
-            serializer.validated_data['event'] = event
-            # update logic for user prediction
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk, format=None):
         team_event = self.get_object(pk)
@@ -112,7 +85,7 @@ class UserTeamEventPredictionCreate(APIView):
 
     schema = get_predictor_schema()
 
-    def get_prediction(self, pk):
+    def get_object(self, pk):
         try:
             return UserTeamEventPrediction.objects.get(pk=pk)
         except UserTeamEventPrediction.DoesNotExist:
@@ -171,7 +144,7 @@ class UserTeamEventPredictionCreate(APIView):
         errors = []
         for data in request.data:
             pk = data['id']
-            db_prediction = self.get_prediction(pk)
+            db_prediction = self.get_object(pk)
             serializer = UserTeamEventPredictionSerializer(
                 db_prediction, data=data)
             if serializer.is_valid():
