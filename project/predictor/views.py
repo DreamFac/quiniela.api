@@ -43,21 +43,23 @@ class TeamEventView(APIView):
         except TeamEvent.DoesNotExist:
             raise Http404
 
+
     def post(self, request, format=None):
 
         bulk = isinstance(request.data, list)
         if bulk:
-            serializer = TeamEventSerializer(data=request.data, many = True)
+            serializer = TeamEventSerializer(data=request.data, many=True)
             if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
+                instance = serializer.save()
+                read_serializer = TeamEventReadSerializer(instance, many=True)
+                return Response(read_serializer.data, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def put(self, request,  format=None):
+    def put(self, request,  frmat=None):
         validated = []
         ok_response = []
         errors = []
-        
+
         for data in request.data:
             pk = data['id']
             db_team_event = self.get_object(pk)
@@ -69,8 +71,9 @@ class TeamEventView(APIView):
 
         if not errors:
             for serializer in validated:
-                serializer.save()
-                ok_response.append(serializer.data)
+                instance = serializer.save()
+                read_serializer = TeamEventReadSerializer(instance)
+                ok_response.append(read_serializer.data)
             return Response(ok_response)
 
         return Response(errors, status=status.HTTP_400_BAD_REQUEST)
@@ -104,7 +107,7 @@ class UserTeamEventPredictionCreate(APIView):
                 predictions, many=True)
             return Response(user_predictions.data, status=status.HTTP_200_OK)
         else:
-            return Response(status=status.HTTP_404_NOT_FOUND)
+            return Response([], status=status.HTTP_200_OK)
 
     def post(self, request, format=None):
         bulk = isinstance(request.data, list)
@@ -120,8 +123,10 @@ class UserTeamEventPredictionCreate(APIView):
                             {'error': 'prediction already exists'},
                             status=status.HTTP_400_BAD_REQUEST
                         )
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
+                instance = serializer.save()
+                read_serializer = UserTeamEventPredictionReadSerializer(
+                    instance, many=True)
+                return Response(read_serializer.data, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
             user = request.user
@@ -133,8 +138,10 @@ class UserTeamEventPredictionCreate(APIView):
                         {'error': 'prediction already exist'},
                         status=status.HTTP_400_BAD_REQUEST
                     )
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
+                instance = serializer.save()
+                read_serializer = UserTeamEventPredictionReadSerializer(
+                    instance, many=True)
+                return Response(read_serializer.data, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request, format=None):
@@ -143,20 +150,31 @@ class UserTeamEventPredictionCreate(APIView):
         ok_response = []
         errors = []
         for data in request.data:
-            pk = data['id']
-            db_prediction = self.get_object(pk)
-            serializer = UserTeamEventPredictionSerializer(
-                db_prediction, data=data)
-            if serializer.is_valid():
-                serializer.validated_data['user'] = user
-                validated.append(serializer)
+            if 'id' in data:
+                pk = data['id']
+                db_prediction = self.get_object(pk)
+
+                if db_prediction.team_event.started:
+                    errors.append({'error':'event: id: {} already starded'.format(db_prediction.team_event.event.id)})
+                    continue
+
+                serializer = UserTeamEventPredictionSerializer(
+                    db_prediction, data=data, partial=True)
+                if serializer.is_valid():
+                    serializer.validated_data['user'] = user
+                    validated.append(serializer)
+                else:
+                    errors.append(serializer.errors)
             else:
-                errors.append(serializer.errors)
+                errors.append(
+                    {'error': 'Id is requiered in order to perform an update'})
 
         if not errors:
             for serializer in validated:
-                serializer.save()
-                ok_response.append(serializer.data)
+                instance = serializer.save()
+                read_serializer = UserTeamEventPredictionReadSerializer(
+                    instance)
+                ok_response.append(read_serializer.data)
             return Response(ok_response)
 
         return Response(errors, status=status.HTTP_400_BAD_REQUEST)
@@ -167,10 +185,43 @@ class UserTeamEventPredictionCreate(APIView):
         return bool(prediction)
 
 
+class UserPredictionPointsView(APIView):
+
+    DEPENDENT = 'dependent'
+    def get_user_points(self, user_id):
+        user_predictions = UserTeamEventPrediction.objects.filter(
+            user__id=user_id, team_event__completed=True)
+        points = 0
+        if user_predictions:
+            
+            checked = False
+            
+            for user_prediction in user_predictions:
+                
+                prediction = user_prediction.prediction.lstrip().lower()
+                final_result = user_prediction.team_event.result.lstrip().lower()
+                # wait for the second result to add points
+                
+                if user_prediction.result_type.result_type == self.DEPENDENT and not checked:
+                    checked = True
+                    continue
+                
+                if prediction == final_result:
+                    point = user_prediction.result_type.points
+                    points += point
+                
+                checked = False
+
+        return {'points': points}
+
+    def get(self, request, format=None):
+        return Response(self.get_user_points(request.user.id), status=status.HTTP_200_OK)
+
+
 class UserTeamEventPredictionUpdate(APIView):
 
-    def get_user_prediction(self, user_id, result_type_id):
-        return UserTeamEventPrediction.objects.filter(user_id=user_id, result_type__id=result_type_id)
+    def get_user_prediction(self, user_id, result_type_id, event_id):
+        return UserTeamEventPrediction.objects.filter(user_id=user_id, result_type__id=result_type_id, team_event__event__id=event_id)
 
     def get_prediction(self, pk):
         try:
@@ -198,7 +249,7 @@ class UserTeamEventPredictionUpdate(APIView):
 
         data = self.get_prediction(pk)
         predictions = self.get_user_prediction(
-            data.user.id, data.result_type.id)
+            data.user.id, data.result_type.id, data.team_event.event.id)
 
         if predictions:
             for prediction in predictions:
@@ -244,15 +295,19 @@ class UserGlobalPredictionView(APIView):
         ok_response = []
         errors = []
         for data in request.data:
-            pk = data['id']
-            db_prediction = self.get_prediction(pk)
-            serializer = UserGlobalPredictionSerializer(
-                db_prediction, data=data)
-            if serializer.is_valid():
-                serializer.validated_data['user'] = user
-                validated.append(serializer)
+            if 'id' in data:
+                pk = data['id']
+                db_prediction = self.get_prediction(pk)
+                serializer = UserGlobalPredictionSerializer(
+                    db_prediction, data=data)
+                if serializer.is_valid():
+                    serializer.validated_data['user'] = user
+                    validated.append(serializer)
+                else:
+                    errors.append(serializer.errors)
             else:
-                errors.append(serializer.errors)
+                errors.append(
+                    {'error': 'Id is requiered in order to perform an update'})
 
         if not errors:
             for serializer in validated:
