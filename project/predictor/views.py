@@ -397,8 +397,11 @@ class LeaderboardView(APIView):
 class UserPredictionPointsView(APIView):
 
     def get_user_points(self, user_id):
-        points = UserLeaderboard.objects.filter(user__id = user_id)
-        return {'points': points[0].points}
+        user_points = UserLeaderboard.objects.filter(user__id = user_id)
+        if user_points:
+            return {'points': user_points[0].points}
+        else:
+            return {'points': 0}
 
     def get(self, request, format=None):
         return Response(self.get_user_points(request.user.id), status=status.HTTP_200_OK)
