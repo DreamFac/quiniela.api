@@ -260,7 +260,7 @@ class UserGlobalPredictionView(APIView):
                 for data in serializer.validated_data:
                     data['user'] = user
                 instance = serializer.save()
-                read_serializer = UserGlobalPredictionReadSerializer(instance)
+                read_serializer = UserGlobalPredictionReadSerializer(instance, many=True)
                 return Response(read_serializer.data, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_400_BAD_REQUEST)
@@ -397,7 +397,9 @@ class LeaderboardView(APIView):
 class UserPredictionPointsView(APIView):
 
     def get_user_points(self, user_id):
+
         user_points = UserLeaderboard.objects.filter(user__id = user_id)
+
         if user_points:
             return {'points': user_points[0].points}
         else:
