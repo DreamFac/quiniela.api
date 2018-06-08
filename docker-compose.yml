@@ -1,0 +1,30 @@
+version: '3'
+services:
+
+    db:
+      container_name: postgres
+      image: postgres
+      environment:
+        POSTGRES_PASSWORD: D?=?MM^NGFCT2H4,c?Jamalk3
+        POSTGRES_USER: oraculapp
+      ports:
+        - "5432:5432"
+        # (HOST:CONTAINER)
+      volumes:
+        - pgdata:/var/lib/postgresql/data/
+        
+    api:
+        container_name: api-container
+        build: .
+        restart: always        
+        command: sh entrypoint.sh        
+        ports:
+        - "80:80"
+        #- "443:443"     
+        depends_on:
+        - db
+        volumes:
+        - ./log:/var/log/nginx
+
+volumes:
+    pgdata:
