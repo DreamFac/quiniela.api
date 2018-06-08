@@ -32,7 +32,7 @@ COPY ./nginx/supervisor-app.conf /etc/supervisor/conf.d/
 # install uwsgi now because it takes a little while
 
 ENV PYTHONUNBUFFERED 1
-ENV DJANGO_SETTINGS_MODULE fluyo.settings.production
+ENV DJANGO_SETTINGS_MODULE config.settings.production
 ENV DJANGO_READ_DOT_ENV_FILE True
 
 WORKDIR /docker_api
