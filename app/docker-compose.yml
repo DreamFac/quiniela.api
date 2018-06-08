@@ -1,0 +1,28 @@
+version: '3'
+services:
+
+    db:
+      container_name: postgres
+      image: postgres
+      environment:
+        POSTGRES_PASSWORD: D?=?MM^NGFCT2H4,c?Mwqz2
+      ports:
+        - "5432:5432"
+        # (HOST:CONTAINER)
+      volumes:
+        - pgdata:/var/lib/postgresql/data/
+        
+    api:
+        container_name: api-container
+        build: .
+        restart: always        
+        command: supervisord -n         
+        ports:
+        - "80:80"     
+        depends_on:
+        - db
+        volumes:
+        - ./log:/var/log/nginx
+
+volumes:
+    pgdata:
