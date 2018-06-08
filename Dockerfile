@@ -4,13 +4,20 @@ LABEL maintainer steelcolosus
 
 
 RUN apt-get update && \
-    apt-get upgrade -y && \	
-    apt-get install -y \
+	apt-get upgrade -y && \	
+	apt-get install -y \
 	git \
 	nginx \
 	supervisor \
 	sqlite3 && \
-   rm -rf /var/lib/apt/lists/*
+	rm -rf /var/lib/apt/lists/*
+
+
+#RUN apt-get install software-properties-common && \
+#	add-apt-repository ppa:certbot/certbot && \
+#	apt-get update && \
+#	apt-get install python-certbot-nginx 
+
 
 RUN pip install --upgrade pip
 
@@ -28,6 +35,10 @@ RUN pip install -r /docker_api/requirements/production.txt
 RUN echo "daemon off;" >> /etc/nginx/nginx.conf
 COPY ./nginx/my_nginx.conf /etc/nginx/sites-available/default
 COPY ./nginx/supervisor-app.conf /etc/supervisor/conf.d/
+
+
+#installing nginx https certificate
+#RUN sudo certbot --nginx
 
 # install uwsgi now because it takes a little while
 
