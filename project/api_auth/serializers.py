@@ -7,11 +7,13 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 import environ
 from datetime import datetime, timedelta
 
-from ..predictor.serializers import (
-    UserTeamEventPredictionSerializer,
-    UserGlobalPredictionSerializer
-)
+from .models import UserProfile
 
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserProfile
+        fields = ('id', 'first_name','last_name','country')
+        required_fields =  ('country',)
 
 class UserSerializer(serializers.ModelSerializer):
 
@@ -27,8 +29,6 @@ class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(
         min_length=8, write_only=True, required=True)
 
-    user_prediction = UserTeamEventPredictionSerializer(many=True)
-    user_global_prediction = UserGlobalPredictionSerializer(many=True)
 
     def create(self, validated_data):
 
@@ -42,10 +42,9 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('id', 'username', 'email',  'password', 'is_active','user_prediction','user_global_prediction')
-        required_fields = ('username', 'password', 'email')
-        read_only_fields = ('user_prediction','user_global_prediction')
-
+        fields = ('id', 'username', 'email',  'password', 'is_active',)
+        required_fields = ('username', 'password', 'email',)
+        write_onlny_fields = ('is_active','password','email')
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod

@@ -37,7 +37,7 @@ class Team(BaseModel):
 
 
 class Event(BaseModel):
-    date = models.DateField()
+    date = models.DateTimeField()
     place = models.CharField(max_length=150)
     event_type = models.ForeignKey(
         EventType, related_name='event_type', on_delete=models.CASCADE)
@@ -56,10 +56,13 @@ class TeamEvent(BaseModel):
         Team, related_name='team_event', on_delete=models.CASCADE)
     result = models.CharField(max_length=150)
 
+    started = models.BooleanField(default=False)
+
     completed = models.BooleanField(default=False)
+    
 
     def __str__(self):
-        return '[ {} ] - [ {} ] - [ {} ] - [ {} ]'.format(self.event, self.team, self.result_type, self.result)
+        return 'id: [ {} ] - [ {} ] - [ {} ] - [ {} ]'.format(self.id, self.event, self.result_type, self.result)
 
 
 class UserTeamEventPrediction(BaseModel):
@@ -76,6 +79,10 @@ class UserTeamEventPrediction(BaseModel):
 
     read = models.BooleanField(default=False)
 
+    calculated = models.BooleanField(default=False)
+
+    delta = models.DecimalField(max_digits=16, decimal_places=2)
+
 
 
 class UserGlobalPrediction(BaseModel):
@@ -85,3 +92,16 @@ class UserGlobalPrediction(BaseModel):
     team = models.ForeignKey(
         Team, related_name='user_global_prediction', on_delete=models.CASCADE)
     place = models.IntegerField()
+
+
+class UserLeaderboard(BaseModel):
+
+    user = models.ForeignKey(
+        'auth.User', related_name='user_leaderboard', on_delete=models.CASCADE)
+    
+    points = models.BigIntegerField(default=0)
+
+    delta_points = models.DecimalField(max_digits=16, decimal_places=2)
+
+    class Meta:
+        ordering = ['-points', '-delta_points']

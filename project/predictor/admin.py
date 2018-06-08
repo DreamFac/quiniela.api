@@ -6,7 +6,8 @@ from .models import (
     Event,
     EventType,
     UserTeamEventPrediction,
-    UserGlobalPrediction
+    UserGlobalPrediction,
+    UserLeaderboard,
 )
 
 # Admin models
@@ -31,12 +32,20 @@ class TeamAdmin(admin.ModelAdmin):
     list_display_links = ('name',)
 
 class TeamEventAdmin(admin.ModelAdmin):
-    list_display = ('id', 'result_type', 'event', 'team', 'result','completed',)
+    list_display = ('id', 'result_type', 'event', 'team', 'result','completed','started',)
     list_display_links = ('event',)
 
 class UserTeamEventPredictionAdmin(admin.ModelAdmin):
-    list_display = ('id','user', 'team_event', 'team', 'result_type', 'prediction', 'read')
+    list_display = ('id','user', 'team_event', 'team', 'result_type', 'prediction', 'read','calculated')
     list_display_links = ('team_event',)
+
+class UserGlobalPredictionAdmin(admin.ModelAdmin):
+    list_display = ('user', 'team', 'place')
+    list_display_links = ('user',)
+
+class UserLeaderboardAdmin(admin.ModelAdmin):
+    list_display=('user','points','delta_points')
+    list_display_links=('user',)
 
 # Register your models here.
 admin.site.register(ResultType, ResultTypeAdmin)
@@ -45,4 +54,5 @@ admin.site.register(Team, TeamAdmin)
 admin.site.register(Event, EventAdmin)
 admin.site.register(EventType, EventTypeAdmin)
 admin.site.register(UserTeamEventPrediction, UserTeamEventPredictionAdmin)
-admin.site.register(UserGlobalPrediction)
+admin.site.register(UserGlobalPrediction, UserGlobalPredictionAdmin)
+admin.site.register(UserLeaderboard, UserLeaderboardAdmin)
