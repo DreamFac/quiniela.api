@@ -25,6 +25,7 @@ RUN pip install uwsgi
 
 RUN mkdir -p /docker_api/requirements
 
+RUN mkdir -p /docker_api/logs
 
 RUN chmod 777 -R /docker_api
 
