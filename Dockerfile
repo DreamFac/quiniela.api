@@ -32,6 +32,7 @@ RUN chmod 777 -R /docker_api
 COPY  ./app/requirements /docker_api/requirements
 
 RUN pip install -r /docker_api/requirements/production.txt
+
 # setup all the configfiles
 RUN echo "daemon off;" >> /etc/nginx/nginx.conf
 COPY ./nginx/my_nginx.conf /etc/nginx/sites-available/default
