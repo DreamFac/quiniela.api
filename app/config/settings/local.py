@@ -1,6 +1,9 @@
 from .base import *
 from datetime import timedelta
 
+
+LANGUAGE_CODE = "es-es"
+
 SECRET_KEY = env('DJANGO_SECRET_KEY', default='(&w$dryiavve#a6vk9hg9nm194lhb$%mn1cs$z-i!i3%pi&w)8')
 
 DEBUG = env.bool('DJANGO_DEBUG', default=True)

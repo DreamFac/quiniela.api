@@ -294,6 +294,13 @@ class UserGlobalPredictionView(APIView):
 
         return Response(errors, status=status.HTTP_400_BAD_REQUEST)
 
+    def delete(self, request, format=None):
+        user_id = request.user.id
+        global_predictions = self.get_global_prediction(user_id)
+        if global_predictions:
+            return Response(global_predictions.delete(), status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
 
 class LeaderboardView(APIView):
 
