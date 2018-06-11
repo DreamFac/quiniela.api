@@ -34,7 +34,7 @@ ALLOWED_HOSTS = env.list('DJANGO_ALLOWED_HOSTS')
 TOKEN_EXPIRE = env.int('ACCESS_TOKEN_LIFETIME')
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=TOKEN_EXPIRE),
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=TOKEN_EXPIRE),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
     'ROTATE_REFRESH_TOKENS': False,
     'BLACKLIST_AFTER_ROTATION': True,
@@ -56,3 +56,30 @@ SIMPLE_JWT = {
 }
 
 LANGUAGE_CODE = "es-es"
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
+        },
+        'simple': {
+            'format': '%(levelname)s %(message)s'
+        },
+    },
+    'handlers': {
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': '../log/django.log',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file'],
+            'level': env('DJANGO_LOG_LEVEL', default='DEBUG'),
+            'propagate': True,
+        },
+    },
+}
