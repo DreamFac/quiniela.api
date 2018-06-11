@@ -25,7 +25,6 @@ RUN pip install uwsgi
 
 RUN mkdir -p /docker_api/requirements
 
-RUN mkdir -p /docker_api/logs
 
 RUN chmod 777 -R /docker_api
 
@@ -54,6 +53,8 @@ COPY  ./app /docker_api
 
 #Static files for django
 RUN mkdir -p /docker_api/project/static
+
+RUN mkdir -p /docker_api/logs
 
 RUN chmod -x entrypoint.sh
 
