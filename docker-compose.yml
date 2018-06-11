@@ -25,6 +25,7 @@ services:
         - db
         volumes:
         - ./log:/var/log/nginx
+        - ./apilog: ./logs
 
 volumes:
     pgdata:
