@@ -23,8 +23,8 @@ services:
         depends_on:
         - db
         volumes:
-        - ./log:/var/log/nginx
-        #- ./apilog:/docker_api/logs
+          - ./log:/var/log/nginx
+          #- ./apilog:/docker_api/logs
 
 volumes:
     pgdata:

@@ -8,8 +8,9 @@ from .models import (
     EventType,
     UserTeamEventPrediction,
     UserGlobalPrediction,
-    UserLeaderboard
+    UserLeaderboard,
 )
+
 
 
 class ResultTypeSerializer(serializers.ModelSerializer):

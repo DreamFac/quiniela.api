@@ -11,6 +11,8 @@ class BaseModel(models.Model):
         abstract = True
 
 
+
+
 class ResultType(BaseModel):
     name = models.CharField(max_length=150)
     result_type = models.CharField(max_length=150)

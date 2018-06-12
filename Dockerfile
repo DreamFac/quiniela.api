@@ -54,7 +54,7 @@ COPY  ./app /docker_api
 #Static files for django
 RUN mkdir -p /docker_api/project/static
 
-RUN mkdir -p /docker_api/logs
+#RUN mkdir -p /docker_api/logs
 
 RUN chmod -x entrypoint.sh
 
