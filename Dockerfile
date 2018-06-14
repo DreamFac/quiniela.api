@@ -1,4 +1,4 @@
-FROM python:3.6.2
+FROM ubuntu:16.04
 
 LABEL maintainer steelcolosus
 
@@ -6,6 +6,9 @@ LABEL maintainer steelcolosus
 RUN apt-get update && \
 	apt-get upgrade -y && \	
 	apt-get install -y \
+	python3-pip \
+	build-essential libssl-dev libffi-dev python3 python3-dev \
+	openssl \
 	git \
 	nginx \
 	supervisor \
@@ -13,15 +16,15 @@ RUN apt-get update && \
 	rm -rf /var/lib/apt/lists/*
 
 
-#RUN apt-get install software-properties-common && \
-#	add-apt-repository ppa:certbot/certbot && \
-#	apt-get update && \
-#	apt-get install python-certbot-nginx 
+RUN apt-get install software-properties-common && \
+	add-apt-repository ppa:certbot/certbot -y && \
+	apt-get update && \
+	apt-get install python-certbot-nginx
 
 
-RUN pip install --upgrade pip
+RUN pip3 install --upgrade pip
 
-RUN pip install uwsgi
+RUN pip3 install uwsgi
 
 RUN mkdir -p /docker_api/requirements
 
@@ -30,7 +33,7 @@ RUN chmod 777 -R /docker_api
 
 COPY  ./app/requirements /docker_api/requirements
 
-RUN pip install -r /docker_api/requirements/production.txt
+RUN pip3 install -r /docker_api/requirements/production.txt
 
 # setup all the configfiles
 RUN echo "daemon off;" >> /etc/nginx/nginx.conf
@@ -39,7 +42,7 @@ COPY ./nginx/supervisor-app.conf /etc/supervisor/conf.d/
 
 
 #installing nginx https certificate
-#RUN sudo certbot --nginx
+#RUN certbot --nginx --non-interactive --agree-tos -m eduardo.avilesj@gmail.com -d a.oraculapp.com 
 
 # install uwsgi now because it takes a little while
 
