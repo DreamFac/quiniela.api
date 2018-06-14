@@ -14,10 +14,11 @@ RUN apt-get update && \
 	supervisor \
 	sqlite3 && rm -rf /var/lib/apt/lists/*
 
-#RUN apt-get install software-properties-common
-#RUN	add-apt-repository ppa:certbot/certbot -y
-#RUN	apt-get update
-#RUN	apt-get install python-certbot-nginx
+RUN apt-get update
+RUN apt-get install software-properties-common -y
+RUN	add-apt-repository ppa:certbot/certbot -y
+RUN	apt-get update
+RUN	apt-get install python-certbot-nginx
 
 
 RUN pip3 install --upgrade pip
@@ -37,10 +38,6 @@ RUN pip3 install -r /docker_api/requirements/production.txt
 RUN echo "daemon off;" >> /etc/nginx/nginx.conf
 COPY ./nginx/my_nginx.conf /etc/nginx/sites-available/default
 COPY ./nginx/supervisor-app.conf /etc/supervisor/conf.d/
-
-
-#installing nginx https certificate
-#RUN certbot --nginx --non-interactive --agree-tos -m eduardo.avilesj@gmail.com -d a.oraculapp.com 
 
 # install uwsgi now because it takes a little while
 
