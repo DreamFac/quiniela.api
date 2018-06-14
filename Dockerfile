@@ -18,7 +18,7 @@ RUN apt-get update
 RUN apt-get install software-properties-common -y
 RUN	add-apt-repository ppa:certbot/certbot -y
 RUN	apt-get update
-RUN	apt-get install python-certbot-nginx
+RUN	apt-get install python-certbot-nginx -y
 
 
 RUN pip3 install --upgrade pip
