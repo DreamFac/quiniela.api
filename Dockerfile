@@ -12,7 +12,7 @@ RUN apt-get update && \
 	git \
 	nginx \
 	supervisor \
-	sqlite3
+	sqlite3 && rm -rf /var/lib/apt/lists/*
 
 #RUN apt-get install software-properties-common
 #RUN	add-apt-repository ppa:certbot/certbot -y
