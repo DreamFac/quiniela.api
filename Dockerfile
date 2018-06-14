@@ -16,10 +16,10 @@ RUN apt-get update && \
 	rm -rf /var/lib/apt/lists/*
 
 
-RUN apt-get install software-properties-common && \
-	add-apt-repository ppa:certbot/certbot -y && \
-	apt-get update && \
-	apt-get install python-certbot-nginx
+RUN apt-get install software-properties-common
+RUN	add-apt-repository ppa:certbot/certbot -y
+RUN	apt-get update
+RUN	apt-get install python-certbot-nginx
 
 
 RUN pip3 install --upgrade pip
