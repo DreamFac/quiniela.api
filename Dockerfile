@@ -14,11 +14,10 @@ RUN apt-get update && \
 	supervisor \
 	sqlite3
 
-RUN apt-get update
-RUN apt-get install software-properties-common
-RUN	add-apt-repository ppa:certbot/certbot -y
-RUN	apt-get update
-RUN	apt-get install python-certbot-nginx
+#RUN apt-get install software-properties-common
+#RUN	add-apt-repository ppa:certbot/certbot -y
+#RUN	apt-get update
+#RUN	apt-get install python-certbot-nginx
 
 
 RUN pip3 install --upgrade pip
