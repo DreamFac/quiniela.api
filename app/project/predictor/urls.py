@@ -25,5 +25,6 @@ urlpatterns = [
     url(r'^predictions/?$', UserTeamEventPredictionCreate.as_view(), name='user-prediction-create'),
     url(r'^predictions/(?P<pk>[0-9]+)/?$', UserTeamEventPredictionUpdate.as_view(), name='user-prediction-update'),
     url(r'^leaderboard/?$', LeaderboardView.as_view(), name='leaderboard'),
+    url(r'^leaderboard-build/?$', LeaderboardCreationView.as_view(), name='build-leaderboard'),
     url(r'^global-predictions/?$', UserGlobalPredictionView.as_view(), name='leaderboard')
 ]
