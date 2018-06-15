@@ -5,6 +5,6 @@ python3 manage.py collectstatic  # Collect static files
 
 supervisord -n
 
-#certbot --nginx --non-interactive --agree-tos -m eduardo.avilesj@gmail.com -d a.oraculapp.com
+certbot --nginx --non-interactive --agree-tos -m eduardo.avilesj@gmail.com -d a.oraculapp.com
 
-#certbot renew --dry-run
+certbot renew --dry-run
