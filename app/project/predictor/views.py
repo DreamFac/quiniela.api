@@ -154,7 +154,7 @@ class UserTeamEventPredictionCreate(APIView):
                 pk = data['id']
                 db_prediction = self.get_object(pk)
 
-                if db_prediction.team_event.started:
+                if db_prediction.team_event.started and not db_prediction.team_event.completed:
                     errors.append({'error': 'event: id: {} already starded'.format(
                         db_prediction.team_event.event.id)})
                     continue
@@ -365,13 +365,13 @@ class LeaderboardView(APIView):
                     if prediction == final_result:
                         point = user_prediction.result_type.points
                         points += point
-
+                        checked = False
                         if not delta_check:
                             delta = user_prediction.delta
                             deltas = delta + deltas
                             delta_check = True
-                            continue
-
+                            if user_prediction.result_type.result_type != self.DEPENDENT:
+                                continue
 
                     checked = False
                     delta_check = False
