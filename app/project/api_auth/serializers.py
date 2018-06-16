@@ -53,6 +53,17 @@ class UserSerializer(serializers.ModelSerializer):
         required_fields = ('username', 'password', 'email',)
         write_onlny_fields = ('is_active','password','email','user_profile')
 
+class UserReadSerializer(serializers.ModelSerializer):
+    user_profile = serializers.SlugRelatedField(
+        many=False,
+        read_only=True,
+        slug_field='country'
+     )
+    class Meta:
+        model = User
+        fields = ('id','email','user_profile')
+        
+
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
     def get_token(cls, user):
