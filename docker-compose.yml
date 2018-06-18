@@ -26,7 +26,7 @@ services:
         volumes:
           - ./log:/var/log/nginx
           - ./certs:/etc/nginx/certs
-          - ./nginx:/etc/nginx/vhost.d
+          - ./nginx/ssl:/etc/nginx/vhost.d
           - challenge:/usr/share/nginx/html
           #- ./apilog:/docker_api/logs
 
