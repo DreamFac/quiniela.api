@@ -37,7 +37,7 @@ class TeamViewSet(viewsets.ModelViewSet):
 
 
 class TeamEventView(APIView):
-
+    
     def get_object(self, pk):
         try:
             return TeamEvent.objects.get(pk=pk)
@@ -118,11 +118,6 @@ class UserTeamEventPredictionCreate(APIView):
             if serializer.is_valid():
                 for data in serializer.validated_data:
                     data['user'] = user
-                    if self.check_prediction(user, data):
-                        return Response(
-                            {'error': 'prediction already exists'},
-                            status=status.HTTP_400_BAD_REQUEST
-                        )
                 instance = serializer.save()
                 read_serializer = UserTeamEventPredictionReadSerializer(
                     instance, many=True)
@@ -133,11 +128,6 @@ class UserTeamEventPredictionCreate(APIView):
             serializer = UserTeamEventPredictionSerializer(data=request.data)
             if serializer.is_valid():
                 serializer.validated_data['user'] = user
-                if self.check_prediction(user, data):
-                    return Response(
-                        {'error': 'prediction already exist'},
-                        status=status.HTTP_400_BAD_REQUEST
-                    )
                 instance = serializer.save()
                 read_serializer = UserTeamEventPredictionReadSerializer(
                     instance, many=True)
@@ -179,11 +169,6 @@ class UserTeamEventPredictionCreate(APIView):
             return Response(ok_response)
 
         return Response(errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def check_prediction(self, user, data):
-        prediction = self.get_user_team_prediction(
-            user.id, data['team'].id, data['result_type'].id)
-        return bool(prediction)
 
 
 class UserTeamEventPredictionUpdate(APIView):
