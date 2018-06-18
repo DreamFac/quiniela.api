@@ -25,9 +25,8 @@ services:
         - db
         volumes:
           - ./log:/var/log/nginx
-          - ./certs:/etc/nginx/certs
-          - ./nginx/ssl:/etc/nginx/vhost.d
-          - challenge:/usr/share/nginx/html
+          - ./certs:/etc/letsencrypt
+          - ./nginx/ssl:/etc/nginx/sites-available
           #- ./apilog:/docker_api/logs
 
 volumes:
