@@ -25,12 +25,11 @@ services:
         - db
         volumes:
           - ./log:/var/log/nginx
-          - ./nginx:/etc/nginx/certs
-          - vhost:/etc/nginx/vhost.d
+          - ./certs:/etc/nginx/certs
+          - ./nginx:/etc/nginx/vhost.d
           - challenge:/usr/share/nginx/html
           #- ./apilog:/docker_api/logs
 
 volumes:
     pgdata:
-    vhost:
     challenge:
