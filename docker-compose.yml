@@ -25,10 +25,10 @@ services:
         - db
         volumes:
           - ./log:/var/log/nginx
-          - ./certs:/etc/letsencrypt
-          - ./nginx/ssl:/etc/nginx/sites-available
+          - certs:/etc/letsencrypt
+          #- ./nginx/ssl:/etc/nginx/sites-available
           #- ./apilog:/docker_api/logs
 
 volumes:
     pgdata:
-    challenge:
+    certs:
