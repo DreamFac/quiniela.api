@@ -37,7 +37,7 @@ RUN pip3 install -r /docker_api/requirements/production.txt
 # setup all the configfiles
 RUN echo "daemon off;" >> /etc/nginx/nginx.conf
 COPY ./nginx/my_nginx.conf /etc/nginx/sites-available/default
-COPY ./nginx/supervisor-app.conf /etc/supervisor/conf.d/
+COPY ./nginx/supervisord.conf /etc/supervisor/
 
 # install uwsgi now because it takes a little while
 
