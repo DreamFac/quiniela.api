@@ -20,11 +20,15 @@ services:
         command: sh entrypoint.sh        
         ports:
         - "80:80"
-        #- "443:443"     
+        - "443:443"
         depends_on:
         - db
         volumes:
-        - ./log:/var/log/nginx
+          - ./log:/var/log/nginx
+          - certs:/etc/letsencrypt
+          #- ./nginx/ssl:/etc/nginx/sites-available
+          #- ./apilog:/docker_api/logs
 
 volumes:
     pgdata:
+    certs:

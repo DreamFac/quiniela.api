@@ -13,6 +13,15 @@ DATABASES = {
     }
 }
 
+CORS_ALLOW_METHODS = (
+    'GET',
+    'POST',
+    'PUT',
+    'PATCH',
+    'DELETE',
+    'OPTIONS',
+)
+
 SECRET_KEY = env.str('DJANGO_SECRET_KEY')
 
 DEBUG = env.bool('DJANGO_DEBUG')
@@ -34,7 +43,7 @@ ALLOWED_HOSTS = env.list('DJANGO_ALLOWED_HOSTS')
 TOKEN_EXPIRE = env.int('ACCESS_TOKEN_LIFETIME')
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=TOKEN_EXPIRE),
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=TOKEN_EXPIRE),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
     'ROTATE_REFRESH_TOKENS': False,
     'BLACKLIST_AFTER_ROTATION': True,
@@ -54,3 +63,5 @@ SIMPLE_JWT = {
     'SLIDING_TOKEN_LIFETIME': timedelta(minutes=5),
     'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),
 }
+
+LANGUAGE_CODE = "es-es"

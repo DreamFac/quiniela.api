@@ -38,14 +38,17 @@ class TeamEventAdmin(admin.ModelAdmin):
 class UserTeamEventPredictionAdmin(admin.ModelAdmin):
     list_display = ('id','user', 'team_event', 'team', 'result_type', 'prediction', 'read','calculated')
     list_display_links = ('team_event',)
+    search_fields = ['user__username']
 
 class UserGlobalPredictionAdmin(admin.ModelAdmin):
     list_display = ('user', 'team', 'place')
     list_display_links = ('user',)
+    search_fields = ['user__username']
 
 class UserLeaderboardAdmin(admin.ModelAdmin):
     list_display=('user','points','delta_points')
     list_display_links=('user',)
+    search_fields = ['user__username']
 
 # Register your models here.
 admin.site.register(ResultType, ResultTypeAdmin)

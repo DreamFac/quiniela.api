@@ -1,4 +1,4 @@
-FROM python:3.6.2
+FROM ubuntu:16.04
 
 LABEL maintainer steelcolosus
 
@@ -6,22 +6,24 @@ LABEL maintainer steelcolosus
 RUN apt-get update && \
 	apt-get upgrade -y && \	
 	apt-get install -y \
+	python3-pip \
+	build-essential libssl-dev libffi-dev python3 python3-dev \
+	openssl \
 	git \
 	nginx \
 	supervisor \
-	sqlite3 && \
-	rm -rf /var/lib/apt/lists/*
+	sqlite3 && rm -rf /var/lib/apt/lists/*
+
+RUN apt-get update
+RUN apt-get install software-properties-common -y
+RUN	add-apt-repository ppa:certbot/certbot -y
+RUN	apt-get update
+RUN	apt-get install python-certbot-nginx -y
 
 
-#RUN apt-get install software-properties-common && \
-#	add-apt-repository ppa:certbot/certbot && \
-#	apt-get update && \
-#	apt-get install python-certbot-nginx 
+RUN pip3 install --upgrade pip
 
-
-RUN pip install --upgrade pip
-
-RUN pip install uwsgi
+RUN pip3 install uwsgi
 
 RUN mkdir -p /docker_api/requirements
 
@@ -30,15 +32,12 @@ RUN chmod 777 -R /docker_api
 
 COPY  ./app/requirements /docker_api/requirements
 
-RUN pip install -r /docker_api/requirements/production.txt
+RUN pip3 install -r /docker_api/requirements/production.txt
+
 # setup all the configfiles
 RUN echo "daemon off;" >> /etc/nginx/nginx.conf
 COPY ./nginx/my_nginx.conf /etc/nginx/sites-available/default
 COPY ./nginx/supervisor-app.conf /etc/supervisor/conf.d/
-
-
-#installing nginx https certificate
-#RUN sudo certbot --nginx
 
 # install uwsgi now because it takes a little while
 
@@ -52,6 +51,8 @@ COPY  ./app /docker_api
 
 #Static files for django
 RUN mkdir -p /docker_api/project/static
+
+#RUN mkdir -p /docker_api/logs
 
 RUN chmod -x entrypoint.sh
 

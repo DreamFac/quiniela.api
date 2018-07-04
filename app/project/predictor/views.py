@@ -37,7 +37,7 @@ class TeamViewSet(viewsets.ModelViewSet):
 
 
 class TeamEventView(APIView):
-
+    
     def get_object(self, pk):
         try:
             return TeamEvent.objects.get(pk=pk)
@@ -118,11 +118,6 @@ class UserTeamEventPredictionCreate(APIView):
             if serializer.is_valid():
                 for data in serializer.validated_data:
                     data['user'] = user
-                    if self.check_prediction(user, data):
-                        return Response(
-                            {'error': 'prediction already exists'},
-                            status=status.HTTP_400_BAD_REQUEST
-                        )
                 instance = serializer.save()
                 read_serializer = UserTeamEventPredictionReadSerializer(
                     instance, many=True)
@@ -133,11 +128,6 @@ class UserTeamEventPredictionCreate(APIView):
             serializer = UserTeamEventPredictionSerializer(data=request.data)
             if serializer.is_valid():
                 serializer.validated_data['user'] = user
-                if self.check_prediction(user, data):
-                    return Response(
-                        {'error': 'prediction already exist'},
-                        status=status.HTTP_400_BAD_REQUEST
-                    )
                 instance = serializer.save()
                 read_serializer = UserTeamEventPredictionReadSerializer(
                     instance, many=True)
@@ -154,7 +144,7 @@ class UserTeamEventPredictionCreate(APIView):
                 pk = data['id']
                 db_prediction = self.get_object(pk)
 
-                if db_prediction.team_event.started:
+                if db_prediction.team_event.started and not db_prediction.team_event.completed:
                     errors.append({'error': 'event: id: {} already starded'.format(
                         db_prediction.team_event.event.id)})
                     continue
@@ -180,13 +170,6 @@ class UserTeamEventPredictionCreate(APIView):
 
         return Response(errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def check_prediction(self, user, data):
-        prediction = self.get_user_team_prediction(
-            user.id, data['team'].id, data['result_type'].id)
-        return bool(prediction)
-
-
-
 
 class UserTeamEventPredictionUpdate(APIView):
 
@@ -208,7 +191,7 @@ class UserTeamEventPredictionUpdate(APIView):
         user = request.user
         prediction = self.get_prediction(pk)
         serializer = UserTeamEventPredictionReadSerializer(
-            prediction, data = request.data)
+            prediction, data=request.data)
         if serializer.is_valid():
             serializer.validated_data['user'] = user
             serializer.save()
@@ -237,7 +220,7 @@ class UserGlobalPredictionView(APIView):
             return UserGlobalPrediction.objects.get(pk=pk)
         except UserGlobalPrediction.DoesNotExist:
             raise Http404
-            
+
     def get_global_prediction(self, user_id):
         return UserGlobalPrediction.objects.filter(user__id=user_id)
 
@@ -255,12 +238,13 @@ class UserGlobalPredictionView(APIView):
         if bulk:
             user = request.user
             serializer = UserGlobalPredictionSerializer(
-                data = request.data, many=True)
+                data=request.data, many=True)
             if serializer.is_valid():
                 for data in serializer.validated_data:
                     data['user'] = user
                 instance = serializer.save()
-                read_serializer = UserGlobalPredictionReadSerializer(instance, many=True)
+                read_serializer = UserGlobalPredictionReadSerializer(
+                    instance, many=True)
                 return Response(read_serializer.data, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_400_BAD_REQUEST)
@@ -288,25 +272,37 @@ class UserGlobalPredictionView(APIView):
         if not errors:
             for serializer in validated:
                 instance = serializer.save()
-                read_serializer=UserGlobalPredictionReadSerializer(instance)
+                read_serializer = UserGlobalPredictionReadSerializer(instance)
                 ok_response.append(read_serializer.data)
             return Response(ok_response)
 
         return Response(errors, status=status.HTTP_400_BAD_REQUEST)
 
+    def delete(self, request, format=None):
+        user_id = request.user.id
+        global_predictions = self.get_global_prediction(user_id)
+        if global_predictions:
+            return Response(global_predictions.delete(), status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
 
 class LeaderboardView(APIView):
-
-    DEPENDENT = 'dependent'
-
-    def get_predictions(self, user_id):
-        return UserTeamEventPrediction.objects.filter(user__id = user_id, calculated=False,  team_event__completed=True)
-
 
     def get(self, request, format=None):
         leaderboard = UserLeaderboard.objects.all()
         serializer = UserLeaderboardReadSerializer(leaderboard, many=True)
         return Response(serializer.data)
+
+
+class LeaderboardCreationView(APIView):
+
+    DEPENDENT = 'dependent'
+
+    def get_predictions(self, user_id):
+        return UserTeamEventPrediction.objects.filter(
+            user__id=user_id,
+            calculated=False,
+            team_event__completed=True)
 
     def post(self, request, format=None):
 
@@ -328,13 +324,15 @@ class LeaderboardView(APIView):
             user_predictions = self.get_predictions(user.id)
 
             if user_predictions:
-                
+
                 checked = False
                 delta_check = False
-                user_position = UserLeaderboard.objects.filter(user__id=user.id)
-                
+                user_position = UserLeaderboard.objects.filter(
+                    user__id=user.id)
+
                 if not user_position:
-                    user_position = UserLeaderboard(user = user, points=0, delta_points=0.0)
+                    user_position = UserLeaderboard(
+                        user=user, points=0, delta_points=0.0)
                     user_position.save()
                 else:
                     user_position = user_position[0]
@@ -354,30 +352,28 @@ class LeaderboardView(APIView):
                         checked = True
                         continue
 
-
                     if prediction == final_result:
                         point = user_prediction.result_type.points
                         points += point
-
+                        checked = False
                         if not delta_check:
                             delta = user_prediction.delta
                             deltas = delta + deltas
                             delta_check = True
-                            continue
-
+                            if user_prediction.result_type.result_type != self.DEPENDENT:
+                                continue
 
                     checked = False
                     delta_check = False
-                    
 
                 update = {
                     'id': user_position.id,
-                    'user':user.id,
-                    'points':points,
-                    'delta_points':deltas
+                    'user': user.id,
+                    'points': points,
+                    'delta_points': deltas
                 }
 
-                leaderboard.append((user_position,update))
+                leaderboard.append((user_position, update))
 
         if bool(leaderboard):
             ok_response = []
@@ -385,20 +381,24 @@ class LeaderboardView(APIView):
             for original, update in leaderboard:
                 serializer = UserLeaderboardSerializer(original, data=update)
                 if serializer.is_valid():
-                    instance = serializer.save()
-                    read_serializer = UserLeaderboardReadSerializer(instance)
-                    ok_response.append(read_serializer.data)
+                    ok_response.append(serializer)
                 else:
                     errors.append(serializer.errors)
-            return Response(ok_response, status=status.HTTP_200_OK)
-        return Response({'message':'no changes for the leaderboard'})
+
+            if not errors:
+                for serializer in ok_response:
+                    serializer.save()
+                return Response({'message': 'leaderboard generated'}, status=status.HTTP_200_OK)
+            else:
+                return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'message': 'no changes for the leaderboard'})
 
 
 class UserPredictionPointsView(APIView):
 
     def get_user_points(self, user_id):
 
-        user_points = UserLeaderboard.objects.filter(user__id = user_id)
+        user_points = UserLeaderboard.objects.filter(user__id=user_id)
 
         if user_points:
             return {'points': user_points[0].points}

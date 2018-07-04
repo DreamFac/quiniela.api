@@ -14,10 +14,13 @@ from rest_framework.permissions import AllowAny
 
 from rest_framework_simplejwt.views import TokenObtainPairView
 
+import logging
+
 # Create your views here.
 
 
-
+# Get an instance of a logger
+logger = logging.getLogger(__name__)
 
 class Signup(APIView): 
     """
@@ -33,6 +36,7 @@ class Signup(APIView):
             serializer.validated_data['is_active'] = True
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
+        logger.error(serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class UserDetail(APIView):
@@ -43,6 +47,7 @@ class UserDetail(APIView):
         try:
             return User.objects.get(pk=pk)
         except User.DoesNotExist:
+            logger.error("User not found")
             raise Http404
 
     def get(self, request, pk, format=None):
@@ -56,6 +61,7 @@ class UserDetail(APIView):
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
+        logger.error(serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk, format=None):
