@@ -39,6 +39,7 @@ RUN echo "daemon off;" >> /etc/nginx/nginx.conf
 COPY ./nginx/my_nginx.conf /etc/nginx/sites-available/default
 COPY ./nginx/supervisor-app.conf /etc/supervisor/conf.d/
 
+
 # install uwsgi now because it takes a little while
 
 ENV PYTHONUNBUFFERED 1
